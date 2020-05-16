@@ -2,7 +2,12 @@ import argparse
 import os
 
 
-def cli():
+def cli(input_args=None):
+    """Main playlist program entrypoint
+
+    >>> cli(['--access-token', 'asdf'])
+    {'access_token': 'asdf'}
+    """
     parser = argparse.ArgumentParser(
         description='Utilities that interact with Spotify playlists'
     )
@@ -14,7 +19,7 @@ def cli():
         help='Spotify OAuth access token'
     )
 
-    args = parser.parse_args()
+    args = parser.parse_args(input_args)
     main(**vars(args))
 
 
