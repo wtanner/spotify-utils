@@ -13,10 +13,22 @@ def cli(input_args=None):
     )
 
     parser.add_argument(
-        '--access-token',
+        '--client-id',
         type=str,
-        required=True,
-        help='Spotify OAuth access token'
+        default=os.getenv('SPOTIFY_CLIENT_ID'),
+        help='Spotify Client ID'
+    )
+    parser.add_argument(
+        '--client-secret',
+        type=str,
+        default=os.getenv('SPOTIFY_CLIENT_SECRET'),
+        help='Spotify client secret'
+    )
+    parser.add_argument(
+        '--redirect-uri',
+        type=str,
+        default='http://localhost:8082',
+        help='Redirect URI (used for authentication)'
     )
 
     args = parser.parse_args(input_args)
