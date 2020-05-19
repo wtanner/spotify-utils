@@ -5,8 +5,8 @@ import os
 def cli(input_args=None):
     """Main playlist program entrypoint
 
-    >>> cli(['--access-token', 'asdf'])
-    {'access_token': 'asdf'}
+    >>> cli(['--client-id', 'asdf'])
+    {'client_id': 'asdf', 'client_secret': None, 'redirect_uri': 'http://localhost:8082'}
     """
     parser = argparse.ArgumentParser(
         description='Utilities that interact with Spotify playlists'
