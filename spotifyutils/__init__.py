@@ -5,7 +5,7 @@ import os
 def cli(input_args=None):
     """Main playlist program entrypoint
 
-    >>> cli(['--client-id', 'asdf'])
+    >>> cli(['config', '--client-id', 'asdf'])
     {'client_id': 'asdf', 'client_secret': None, 'redirect_uri': 'http://localhost:8082'}
     """
     parser = argparse.ArgumentParser(
