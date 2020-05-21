@@ -6,7 +6,7 @@ def cli(input_args=None):
     """Main playlist program entrypoint
 
     >>> cli(['config', '--client-id', 'asdf'])
-    {'client_id': 'asdf', 'client_secret': None, 'redirect_uri': 'http://localhost:8082', 'configfile': '/home/wes/.spotifyutils'}
+    Test
     """
     parser = argparse.ArgumentParser(
         description='Utilities that interact with Spotify playlists'
@@ -53,4 +53,4 @@ def cli(input_args=None):
 
 
 def main(**kwargs):
-    print(kwargs)
+    print('Test')
