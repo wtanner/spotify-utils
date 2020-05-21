@@ -7,16 +7,19 @@ This is a collection of programs that interact with Spotify.
 ### Playlists
 
 ```shell
-spotifyplaylists --help
+spotifyutils --help
 
-usage: spotifyplaylists [-h] --access-token ACCESS_TOKEN
+usage: spotifyutils [-h] {config,playlist} ...
 
 Utilities that interact with Spotify playlists
 
+positional arguments:
+  {config,playlist}  sub-command help
+    config           Configure and authenticate
+    playlist         Utilities that deal with Spotify playlists
+
 optional arguments:
-  -h, --help            show this help message and exit
-  --access-token ACCESS_TOKEN
-                        Spotify OAuth access token
+  -h, --help         show this help message and exit
 ```
 
 ## Installation from this repository
