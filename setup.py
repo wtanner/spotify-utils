@@ -4,11 +4,11 @@ setup(
     name='Spotify Utilities',
     version='0.1',
     packages=[
-        'spotifyutils.playlists'
+        'spotifyutils', 'spotifyutils.playlists'
     ],
     entry_points={
         'console_scripts': [
-            'spotifyplaylists = spotifyutils.playlists:cli'
+            'spotifyutils = spotifyutils:cli'
         ]
     }
 )

@@ -1,4 +1,4 @@
-from spotifyutils.playlists import cli
+from spotifyutils import cli
 
 
 if __name__ == '__main__':
