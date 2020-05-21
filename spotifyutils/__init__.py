@@ -39,7 +39,7 @@ def cli(input_args=None):
     parser_config.add_argument(
         '--configfile',
         type=str,
-        default=os.path.join(os.getenv('HOME'), '.spotifyutils'),
+        default=os.path.join(os.path.expanduser('~'), '.spotifyutils'),
         help='Location on the filesystem to store configuration parameters'
     )
 
