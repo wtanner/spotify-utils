@@ -1,6 +1,8 @@
 import argparse
 import os
-
+import http.server
+import socketserver
+import webbrowser
 
 def cli(input_args=None):
     """Main playlist program entrypoint
@@ -51,6 +53,20 @@ def cli(input_args=None):
     args = parser.parse_args(input_args)
     main(**vars(args))
 
+def webserver():
+    """ spin up a simple web server """
+    port = 8888
+    Handler = http.server.SimpleHTTPRequestHandler
+    socketserver.TCPServer.allow_reuse_address=True
+
+    with socketserver.TCPServer(("", port), Handler) as httpd:
+        print("severing at port", port)
+        openWebPage()
+        httpd.serve_forever()
+
+def openWebPage():
+    redirectURL = 'http://localhost:8888/spotifyutils'
+    webbrowser.open_new(redirectURL)
 
 def main(**kwargs):
-    print('Test')
+    print(kwargs)
