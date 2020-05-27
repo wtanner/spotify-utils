@@ -1,18 +1,20 @@
 import argparse
 import os
 
+import spotifyutils.config
+
 
 def cli(input_args=None):
-    """Main playlist program entrypoint
-
-    >>> cli(['config', '--client-id', 'asdf'])
-    Test
+    """Main program entrypoint
     """
     parser = argparse.ArgumentParser(
         description='Utilities that interact with Spotify playlists'
     )
 
-    subparsers = parser.add_subparsers(help='sub-command help')
+    subparsers = parser.add_subparsers(
+        help='sub-command help',
+        dest='command'
+    )
 
     # Configuration command
     parser_config = subparsers.add_parser(
@@ -25,21 +27,19 @@ def cli(input_args=None):
         help='Spotify Client ID'
     )
     parser_config.add_argument(
-        '--client-secret',
+        '--secret-id',
         type=str,
-        default=os.getenv('SPOTIFY_CLIENT_SECRET'),
-        help='Spotify client secret'
+        default=os.getenv('SPOTIFY_SECRET_ID'),
+        help='Spotify secret ID'
     )
     parser_config.add_argument(
         '--redirect-uri',
         type=str,
-        default='http://localhost:8082',
         help='Redirect URI (used for authentication)'
     )
     parser_config.add_argument(
         '--configfile',
         type=str,
-        default=os.path.join(os.path.expanduser('~'), '.spotifyutils'),
         help='Location on the filesystem to store configuration parameters'
     )
 
@@ -53,4 +53,7 @@ def cli(input_args=None):
 
 
 def main(**kwargs):
-    print('Test')
+    command = kwargs['command']
+
+    if command == 'config':
+        spotifyutils.config.run(**kwargs)
