@@ -69,4 +69,7 @@ def openWebPage():
     webbrowser.open_new(redirectURL)
 
 def main(**kwargs):
-    print(kwargs)
+    with open(kwargs['configfile'], "w") as config:
+        for key, value in kwargs.items():
+            config.write(str(key) + '=' + str(value) + '\n')
+

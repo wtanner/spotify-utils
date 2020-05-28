@@ -1,9 +1,17 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Hellow World!</title>
-  </head>
-  <body>
-    <h1>Index page!Test</h1>
-  </body>
+<html id="app" lang="en" dir="ltr" ng-csp ng-strict-di>
+<head>
+  <meta charset="utf-8">
+  <title ng-bind="(&#39;loginTitle&#39; | localize) + &#39; - Spotify&#39;">Spotify</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <base href="/">
+  <link rel="icon" href="https://accounts.scdn.co/images/favicon.ace4d8543bbb017893402a1e9d1ac1fa.ico">
+  <link href="https://accounts.scdn.co/css/index.7cbd8f7344fc512df361.css" media="screen" rel="stylesheet">
+
+  <script defer src="https://accounts.scdn.co/js/index.7cbd8f7344fc512df361.js" sp-bootstrap></script>
+  <meta ng-non-bindable sp-bootstrap-data='{"phoneFeatureEnabled":false,"previewEnabled":false,"user":false,"tpaState":"AQCu/96BOg3YFXkXjOX0yQ/O7B5TrcGR8skSiJzCoJ+0bpfwDA5rQIKCtAWffFuiSpMvns5gA5bp3DdJDiSWS5ANDgdoM8sdR0maZMO5mvRrWIkS2//iQlHXYhA3q9ZOgOX/C/mRvcl4ObfNmonTUF2FDsaK4aUcKagztrSEIPZrS3kx5hYVl6XNAzCVQZjit6OkcCI/DD0P1dPE1wLAidgTLAOqC6O6jZzwsx9wWWJmjj8IMKN2eiw6GVCQZLZjSp5+PgYGMtx3puYmQdgnYp8ObAmtKsjYn4osUwIFuWYE0r19kiQ4pa3wyYzVReLwanebln0hv9JBwDIial91Cl5se4kdHw==","BON":["0","0",-912871983]}'>
+</head>
+<body ng-controller="LoginController">
+  <div ng-include="template"></div>
+</body>
 </html>
