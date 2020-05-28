@@ -3,6 +3,7 @@ import os
 import http.server
 import socketserver
 import webbrowser
+import urllib.parse
 
 def cli(input_args=None):
     """Main playlist program entrypoint
@@ -35,7 +36,7 @@ def cli(input_args=None):
     parser_config.add_argument(
         '--redirect-uri',
         type=str,
-        default='http://localhost:8082',
+        default='http://localhost:8888/',
         help='Redirect URI (used for authentication)'
     )
     parser_config.add_argument(
@@ -61,15 +62,25 @@ def webserver():
 
     with socketserver.TCPServer(("", port), Handler) as httpd:
         print("severing at port", port)
-        openWebPage()
         httpd.serve_forever()
-
-def openWebPage():
-    redirectURL = 'http://localhost:8888/spotifyutils'
-    webbrowser.open_new(redirectURL)
 
 def main(**kwargs):
     with open(kwargs['configfile'], "w") as config:
         for key, value in kwargs.items():
             config.write(str(key) + '=' + str(value) + '\n')
 
+    requestUrl = "https://accounts.spotify.com/authorize"
+    response_type = 'code'
+    scope = 'user-read-email'
+    show_dialog = 'true'
+
+    PARAMS = {
+        'client_id': kwargs['client_id'],
+        'response_type': response_type,
+        'redirect_uri': kwargs['redirect_uri'],
+        'scope': scope,
+        'show_dialog': show_dialog
+    }
+
+    authorizationURL = ('https://accounts.spotify.com/authorize?' + (urllib.parse.urlencode(PARAMS)))
+    webbrowser.open_new(authorizationURL)
