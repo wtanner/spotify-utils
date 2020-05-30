@@ -4,6 +4,7 @@ import http.server
 import socketserver
 import webbrowser
 import urllib.parse
+import configparser
 
 def cli(input_args=None):
     """Main playlist program entrypoint
@@ -36,13 +37,13 @@ def cli(input_args=None):
     parser_config.add_argument(
         '--redirect-uri',
         type=str,
-        default='http://localhost:8888/',
+        default='http://localhost:8888/spotifyutils/',
         help='Redirect URI (used for authentication)'
     )
     parser_config.add_argument(
         '--configfile',
         type=str,
-        default=os.path.join(os.path.expanduser('~'), '.spotifyutils'),
+        default=os.path.join(os.path.expanduser('~'), '.spotifyutils.ini'),
         help='Location on the filesystem to store configuration parameters'
     )
 
@@ -65,10 +66,17 @@ def webserver():
         httpd.serve_forever()
 
 def main(**kwargs):
-    with open(kwargs['configfile'], "w") as config:
-        for key, value in kwargs.items():
-            config.write(str(key) + '=' + str(value) + '\n')
+    config = configparser.ConfigParser()
+    config ['SPOTIFYUTILS'] = {
+        'ClIENT_ID': kwargs['client_id'],
+        'CLIENT_SECRET': kwargs['client_secret'],
+        'REDIRECT_URI': kwargs['redirect_uri'],
+    }
+    with open(kwargs['configfile'], "w") as f:
+        config.write(f)
 
+def authorize():
+    """ Direct user to authorize spotify URL """
     requestUrl = "https://accounts.spotify.com/authorize"
     response_type = 'code'
     scope = 'user-read-email'
