@@ -53,8 +53,42 @@ def cli(input_args=None):
     )
 
     args = parser.parse_args(input_args)
-    main(**vars(args))
+    configfile = args.configfile
+    
+    config = configparser.ConfigParser()
+    config ['spotifyutils'] = {
+        'ClIENT_ID': args.client_id,
+        'CLIENT_SECRET': args.client_secret,
+        'REDIRECT_URI': args.redirect_uri
+    }
 
+    with open(args.configfile, "w") as f:
+        config.write(f)
+
+    main(configfile)
+
+def main(configfile):
+    """ Direct user to authorize spotify URL """
+
+    parser = configparser.ConfigParser()
+    parser.read(configfile)
+    baseUrl = "https://accounts.spotify.com/authorize?"
+    response_type = 'code'
+    scope = 'user-read-email'
+    show_dialog = 'true'
+
+    PARAMS = {
+        'client_id': parser.get('spotifyutils', 'client_id'),
+        'response_type': response_type,
+        'redirect_uri': parser.get('spotifyutils', 'redirect_uri'),
+        'scope': scope,
+        'show_dialog': show_dialog
+    }
+
+    authorizationURL = (baseUrl + (urllib.parse.urlencode(PARAMS)))
+    webbrowser.open_new(authorizationURL)
+
+### Need to create Class here for the webserver and how to handle incoming web requests
 def webserver():
     """ spin up a simple web server """
     port = 8888
@@ -64,31 +98,3 @@ def webserver():
     with socketserver.TCPServer(("", port), Handler) as httpd:
         print("severing at port", port)
         httpd.serve_forever()
-
-def main(**kwargs):
-    config = configparser.ConfigParser()
-    config ['SPOTIFYUTILS'] = {
-        'ClIENT_ID': kwargs['client_id'],
-        'CLIENT_SECRET': kwargs['client_secret'],
-        'REDIRECT_URI': kwargs['redirect_uri'],
-    }
-    with open(kwargs['configfile'], "w") as f:
-        config.write(f)
-
-def authorize():
-    """ Direct user to authorize spotify URL """
-    requestUrl = "https://accounts.spotify.com/authorize"
-    response_type = 'code'
-    scope = 'user-read-email'
-    show_dialog = 'true'
-
-    PARAMS = {
-        'client_id': kwargs['client_id'],
-        'response_type': response_type,
-        'redirect_uri': kwargs['redirect_uri'],
-        'scope': scope,
-        'show_dialog': show_dialog
-    }
-
-    authorizationURL = ('https://accounts.spotify.com/authorize?' + (urllib.parse.urlencode(PARAMS)))
-    webbrowser.open_new(authorizationURL)
