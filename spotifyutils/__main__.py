@@ -1,6 +1,6 @@
-from spotifyutils import cli, webserver
+from spotifyutils import cli, server
 
 
 if __name__ == '__main__':
     cli()
-    webserver()
+    server()

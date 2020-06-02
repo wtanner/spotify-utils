@@ -88,13 +88,21 @@ def main(configfile):
     authorizationURL = (baseUrl + (urllib.parse.urlencode(PARAMS)))
     webbrowser.open_new(authorizationURL)
 
-### Need to create Class here for the webserver and how to handle incoming web requests
-def webserver():
-    """ spin up a simple web server """
+
+class WebServer(http.server.BaseHTTPRequestHandler):
+    
+    def do_GET(self):
+        """ Handle auth code sent to redirect URI """
+        respone = urllib.parse.parse_qs(self.path)
+        self.send_response(200)
+        print(respone)
+        
+def server():
+    """ create a web server to handle the get request """
     port = 8888
     Handler = http.server.SimpleHTTPRequestHandler
     socketserver.TCPServer.allow_reuse_address=True
 
-    with socketserver.TCPServer(("", port), Handler) as httpd:
+    with socketserver.TCPServer(("", port), WebServer) as httpd:
         print("severing at port", port)
         httpd.serve_forever()
