@@ -53,22 +53,22 @@ def cli(input_args=None):
     )
 
     args = parser.parse_args(input_args)
-    configfile = args.configfile
+    main(**vars(args))
+
+def main(**kwargs):
+    """ Direct user to authorize spotify URL """
+
+    configfile = kwargs['configfile']
     
     config = configparser.ConfigParser()
     config ['spotifyutils'] = {
-        'ClIENT_ID': args.client_id,
-        'CLIENT_SECRET': args.client_secret,
-        'REDIRECT_URI': args.redirect_uri
+        'ClIENT_ID': kwargs['client_id'],
+        'CLIENT_SECRET': kwargs['client_secret'],
+        'REDIRECT_URI': kwargs['redirect_uri']
     }
 
-    with open(args.configfile, "w") as f:
+    with open(configfile, "w") as f:
         config.write(f)
-
-    main(configfile)
-
-def main(configfile):
-    """ Direct user to authorize spotify URL """
 
     parser = configparser.ConfigParser()
     parser.read(configfile)
@@ -90,19 +90,18 @@ def main(configfile):
 
 
 class WebServer(http.server.BaseHTTPRequestHandler):
-    
+
     def do_GET(self):
         """ Handle auth code sent to redirect URI """
-        respone = urllib.parse.parse_qs(self.path)
-        self.send_response(200)
-        print(respone)
+        endpoint = urllib.parse.urlparse(self.path).path
+        print("This is the endpoint", endpoint)
+
         
 def server():
     """ create a web server to handle the get request """
     port = 8888
-    Handler = http.server.SimpleHTTPRequestHandler
     socketserver.TCPServer.allow_reuse_address=True
 
     with socketserver.TCPServer(("", port), WebServer) as httpd:
         print("severing at port", port)
-        httpd.serve_forever()
+        httpd.serve_forever()               
