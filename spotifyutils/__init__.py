@@ -7,6 +7,7 @@ import urllib.parse
 import configparser
 
 configfile = ''
+REDIRECT_URI = ''
 AUTHCODE = ''
 
 def cli(input_args=None):
@@ -61,6 +62,7 @@ def cli(input_args=None):
 def main(**kwargs):
     """ Direct user to authorize spotify URL """
 
+    global REDIRECT_URI
     global configfile
     configfile = kwargs['configfile']
     
@@ -76,6 +78,7 @@ def main(**kwargs):
 
     parser = configparser.ConfigParser()
     parser.read(configfile)
+    REDIRECT_URI = parser.get('spotifyutils', 'redirect_uri')
     baseUrl = "https://accounts.spotify.com/authorize?"
     response_type = 'code'
     scope = 'user-read-email'
@@ -84,7 +87,7 @@ def main(**kwargs):
     PARAMS = {
         'client_id': parser.get('spotifyutils', 'client_id'),
         'response_type': response_type,
-        'redirect_uri': parser.get('spotifyutils', 'redirect_uri'),
+        'redirect_uri': REDIRECT_URI,
         'scope': scope,
         'show_dialog': show_dialog
     }
@@ -100,9 +103,7 @@ class WebServer(http.server.BaseHTTPRequestHandler):
         global AUTHCODE
         
         # Read URI from configfile
-        parser = configparser.ConfigParser()
-        parser.read(configfile)
-        uri = urllib.parse.urlparse(parser.get('spotifyutils', 'redirect_uri')).path
+        uri = urllib.parse.urlparse(REDIRECT_URI).path
 
         # Parse path out of GET request
         endpoint = urllib.parse.urlparse(self.path).path
@@ -115,15 +116,17 @@ class WebServer(http.server.BaseHTTPRequestHandler):
             self.send_header('Content-Type', 'text/html')
             self.end_headers()
             self.wfile.write('Close me!'.encode())
+
         else:
             self.send_response(404, 'NOT FOUND')
-        print(AUTHCODE)
         
 def server():
     """ create a web server to handle the get request """
-    port = 8888
+
+    host, port = urllib.parse.urlparse(REDIRECT_URI).netloc.split(':')
     socketserver.TCPServer.allow_reuse_address=True
 
-    with socketserver.TCPServer(("", port), WebServer) as httpd:
-        print("severing at port", port)
-        httpd.serve_forever()               
+    if AUTHCODE == '':
+        with socketserver.TCPServer((host, int(port)), WebServer) as httpd:
+            print("severing at port", port)
+            httpd.serve_forever()           
