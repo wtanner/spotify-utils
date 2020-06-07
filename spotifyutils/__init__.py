@@ -6,6 +6,8 @@ import webbrowser
 import urllib.parse
 import configparser
 
+configfile = ''
+
 def cli(input_args=None):
     """Main playlist program entrypoint
 
@@ -58,6 +60,7 @@ def cli(input_args=None):
 def main(**kwargs):
     """ Direct user to authorize spotify URL """
 
+    global configfile
     configfile = kwargs['configfile']
     
     config = configparser.ConfigParser()
@@ -93,8 +96,10 @@ class WebServer(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self):
         """ Handle auth code sent to redirect URI """
+        print("configfile in the doGET function: ", configfile)
+        selfPath = self.path
         endpoint = urllib.parse.urlparse(self.path).path
-        print("This is the endpoint", endpoint)
+        
 
         
 def server():
