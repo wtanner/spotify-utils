@@ -129,4 +129,6 @@ def server():
     if AUTHCODE == '':
         with socketserver.TCPServer((host, int(port)), WebServer) as httpd:
             print("severing at port", port)
-            httpd.serve_forever()           
+            while not AUTHCODE:
+                print("This is the authcode in the server, if authcode loop:, ", AUTHCODE)
+                httpd.handle_request()       
