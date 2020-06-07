@@ -7,6 +7,7 @@ import urllib.parse
 import configparser
 
 configfile = ''
+AUTHCODE = ''
 
 def cli(input_args=None):
     """Main playlist program entrypoint
@@ -96,11 +97,27 @@ class WebServer(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self):
         """ Handle auth code sent to redirect URI """
-        print("configfile in the doGET function: ", configfile)
-        selfPath = self.path
-        endpoint = urllib.parse.urlparse(self.path).path
+        global AUTHCODE
         
+        # Read URI from configfile
+        parser = configparser.ConfigParser()
+        parser.read(configfile)
+        uri = urllib.parse.urlparse(parser.get('spotifyutils', 'redirect_uri')).path
 
+        # Parse path out of GET request
+        endpoint = urllib.parse.urlparse(self.path).path
+
+        if uri == endpoint:
+            params = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+            AUTHCODE = params['code'][0]
+
+            self.send_response(200, 'OK')
+            self.send_header('Content-Type', 'text/html')
+            self.end_headers()
+            self.wfile.write('Close me!'.encode())
+        else:
+            self.send_response(404, 'NOT FOUND')
+        print(AUTHCODE)
         
 def server():
     """ create a web server to handle the get request """
