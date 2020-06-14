@@ -45,7 +45,7 @@ def cli(input_args=None):
     parser_config.add_argument(
         '--redirect-uri',
         type=str,
-        default='https://localhost:8888/spotifyutils/',
+        default='https://localhost:8084/spotifyutils/',
         help='Redirect URI (used for authentication)'
     )
     parser_config.add_argument(
@@ -113,14 +113,14 @@ class WebServer(http.server.BaseHTTPRequestHandler):
         endpoint = urllib.parse.urlparse(self.path).path
 
         if uri == endpoint:
-            print('made it to do_get')
             params = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
             AUTHCODE = params['code'][0]
 
+            self.path = 'spotifyutils/index.html'
+            indexFile = open(self.path).read()
             self.send_response(200, 'OK')
-            self.send_header('Content-Type', 'text/html')
             self.end_headers()
-            self.wfile.write('Close me!'.encode())
+            self.wfile.write(bytes(indexFile, 'utf-8'))
 
         else:
             self.send_response(404, 'NOT FOUND')
@@ -146,7 +146,7 @@ def secureServer(http_server, host):
                 cert_file.name, key_file.name
             )
 
-    http_server.socket = ssl_context.wrap_socket(http_server.socket, server_side=True)    
+    http_server.socket = ssl_context.wrap_socket(http_server.socket, server_side=True) 
     return http_server
         
 def server():
@@ -161,9 +161,9 @@ def server():
             httpd = secureServer(httpd, host)
             while not AUTHCODE:
                 httpd.handle_request()
+    
+    return AUTHCODE
 
-
-#RequestAccessToken()
 def RequestAccessToken():
     """Exchange auth code for access token"""
     parser = configparser.ConfigParser()
