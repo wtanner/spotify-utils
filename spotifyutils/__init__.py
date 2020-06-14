@@ -5,6 +5,10 @@ import socketserver
 import webbrowser
 import urllib.parse
 import configparser
+import tempfile
+import base64
+import ssl
+from spotifyutils.cert import generate_selfsigned_cert
 
 configfile = ''
 REDIRECT_URI = ''
@@ -41,7 +45,7 @@ def cli(input_args=None):
     parser_config.add_argument(
         '--redirect-uri',
         type=str,
-        default='http://localhost:8888/spotifyutils/',
+        default='https://localhost:8888/spotifyutils/',
         help='Redirect URI (used for authentication)'
     )
     parser_config.add_argument(
@@ -109,6 +113,7 @@ class WebServer(http.server.BaseHTTPRequestHandler):
         endpoint = urllib.parse.urlparse(self.path).path
 
         if uri == endpoint:
+            print('made it to do_get')
             params = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
             AUTHCODE = params['code'][0]
 
@@ -119,16 +124,64 @@ class WebServer(http.server.BaseHTTPRequestHandler):
 
         else:
             self.send_response(404, 'NOT FOUND')
+
+def secureServer(http_server, host):
+    """ generate items required to make web server secure """
+
+    ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    
+    # create a temporary, throwaway certificate
+    cert, private = generate_selfsigned_cert(host)
+
+    # these files are deleted after the context exists
+    with tempfile.NamedTemporaryFile() as cert_file:
+        with tempfile.NamedTemporaryFile() as key_file:
+
+            cert_file.write(cert)
+            key_file.write(private)
+            cert_file.flush()
+            key_file.flush()
+
+            ssl_context.load_cert_chain(
+                cert_file.name, key_file.name
+            )
+
+    http_server.socket = ssl_context.wrap_socket(http_server.socket, server_side=True)    
+    return http_server
         
 def server():
     """ create a web server to handle the get request """
-
+    
     host, port = urllib.parse.urlparse(REDIRECT_URI).netloc.split(':')
-    socketserver.TCPServer.allow_reuse_address=True
 
-    if AUTHCODE == '':
-        with socketserver.TCPServer((host, int(port)), WebServer) as httpd:
-            print("severing at port", port)
+    if AUTHCODE:
+        return AUTHCODE
+    else:
+        with http.server.HTTPServer((host, int(port)), WebServer) as httpd:
+            httpd = secureServer(httpd, host)
             while not AUTHCODE:
-                print("This is the authcode in the server, if authcode loop:, ", AUTHCODE)
-                httpd.handle_request()       
+                httpd.handle_request()
+
+
+#RequestAccessToken()
+def RequestAccessToken():
+    """Exchange auth code for access token"""
+    parser = configparser.ConfigParser()
+    parser.read(configfile)
+
+    tokenEndpoint = 'https://accounts.spotify.com/api/token'
+    grant_type = 'authorization_code'
+    b64client_id = base64.standard_b64encode(parser.get('spotifyutils', 'client_id'))
+    b64client_secret = base64.standard_b64encode(parser.get('spotifyutils', 'client_secret'))
+    
+    urlEncodedParams = urllib.parse.urlencode({
+        'grant_type': grant_type,
+        'code': AUTHCODE,
+        'redirect_uri': REDIRECT_URI
+    })
+
+    Header = {
+        'Authorization': 'Basic',
+        b64client_id: b64client_secret
+    }
+    print("this is the header: ", Header)
