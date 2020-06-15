@@ -1,8 +1,10 @@
 import argparse
 import os
+import json
 import http.server
 import socketserver
 import webbrowser
+import urllib.request
 import urllib.parse
 import configparser
 import tempfile
@@ -164,24 +166,24 @@ def server():
     
     return AUTHCODE
 
-def RequestAccessToken():
+def getTokens():
     """Exchange auth code for access token"""
     parser = configparser.ConfigParser()
     parser.read(configfile)
 
     tokenEndpoint = 'https://accounts.spotify.com/api/token'
     grant_type = 'authorization_code'
-    b64client_id = base64.standard_b64encode(parser.get('spotifyutils', 'client_id'))
-    b64client_secret = base64.standard_b64encode(parser.get('spotifyutils', 'client_secret'))
     
-    urlEncodedParams = urllib.parse.urlencode({
+    encodedParams = urllib.parse.urlencode({
         'grant_type': grant_type,
         'code': AUTHCODE,
-        'redirect_uri': REDIRECT_URI
-    })
+        'redirect_uri': REDIRECT_URI,
+        'client_id': parser.get('spotifyutils', 'client_id'),
+        'client_secret': parser.get('spotifyutils', 'client_secret')
+    }).encode('ascii')
 
-    Header = {
-        'Authorization': 'Basic',
-        b64client_id: b64client_secret
-    }
-    print("this is the header: ", Header)
+    request = urllib.request.Request(tokenEndpoint, encodedParams)
+    response = urllib.request.urlopen(request).read()
+    json_data = json.loads(response)
+    access_token = json_data['access_token']
+    refresh_token = json_data['refresh_token']
