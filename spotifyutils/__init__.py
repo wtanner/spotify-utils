@@ -79,4 +79,4 @@ def main(**kwargs):
     server()
 
     print("Getting Auth and Refresh Tokens")
-    getTokens(client_id, client_secret)
+    accessToken, refreshToken = getTokens(client_id, client_secret)
