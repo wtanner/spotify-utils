@@ -46,10 +46,10 @@ def cli(input_args=None):
     )
 
     args = parser.parse_args(input_args)
-    main(**vars(args))
+    configuration(**vars(args))
 
-def main(**kwargs):
-    """ Interpret passed arguments and execute the program """
+def configuration(**kwargs):
+    """ Interpret CLI args and create configuration """
     
     # if configfile arg is passed, check if any other args are passed. If additional args are passed, overwrite any existing args 
     # specified in configfile. If additional arguments are NOT passed, simply read the values stored in the configfile. 
@@ -80,7 +80,12 @@ def main(**kwargs):
         client_secret = kwargs['client_secret']
         redirect_uri = kwargs['redirect_uri']
 
+    main(client_id, client_secret, redirect_uri)
+    
 
+def main(client_id, client_secret, redirect_uri):
+    
+    """ call other functions with variables configured in configuration function """
     print("Redirecting to Spotify Authorization URI, and spinning up web server")
     user_auth(redirect_uri, client_id)
     server()
