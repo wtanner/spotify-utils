@@ -49,9 +49,11 @@ def cli(input_args=None):
     main(**vars(args))
 
 def main(**kwargs):
-    """ TODO: better descriptor """
-
-    #TODO: Need to figure out how to wrtie to config file under "spotifyutils" header
+    """ Interpret passed arguments and execute the program """
+    
+    # if configfile arg is passed, check if any other args are passed. If additional args are passed, overwrite any existing args 
+    # specified in configfile. If additional arguments are NOT passed, simply read the values stored in the configfile. 
+    # If configfile is not passed, just use CLI args passed.
 
     if kwargs['configfile']:
         configfile = kwargs['configfile']
@@ -77,6 +79,7 @@ def main(**kwargs):
         client_id = kwargs['client_id']
         client_secret = kwargs['client_secret']
         redirect_uri = kwargs['redirect_uri']
+
 
     print("Redirecting to Spotify Authorization URI, and spinning up web server")
     user_auth(redirect_uri, client_id)
