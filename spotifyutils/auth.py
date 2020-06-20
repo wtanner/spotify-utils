@@ -11,12 +11,12 @@ import tempfile
 REDIRECT_URI = None
 AUTHCODE = None
 
-def userAuth(redirect_uri, client_id):
+def user_auth(redirect_uri, client_id):
     """ Generate and take user to Spotify Auth Page """
 
     global REDIRECT_URI 
     REDIRECT_URI = redirect_uri
-    baseUrl = "https://accounts.spotify.com/authorize"
+    base_url = "https://accounts.spotify.com/authorize"
     response_type = 'code'
     scope = 'user-read-email'
     show_dialog = 'true'
@@ -29,10 +29,10 @@ def userAuth(redirect_uri, client_id):
         'show_dialog': show_dialog
     }
 
-    authorizationURL = (baseUrl + "?" + (urllib.parse.urlencode(PARAMS)))
-    webbrowser.open_new(authorizationURL)
+    authorization_url = base_url + "?" + (urllib.parse.urlencode(PARAMS))
+    webbrowser.open_new(authorization_url)
 
-class WebServer(http.server.BaseHTTPRequestHandler):
+class web_server(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self):
         """ Handle auth code sent to redirect URI """
@@ -57,7 +57,7 @@ class WebServer(http.server.BaseHTTPRequestHandler):
         else:
             self.send_response(404, 'NOT FOUND')
 
-def secureServer(http_server, host):
+def secure_server(http_server, host):
     """ generate items required to make web server secure """
 
     ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
@@ -89,14 +89,14 @@ def server():
     if AUTHCODE:
         return AUTHCODE
     else:
-        with http.server.HTTPServer((host, int(port)), WebServer) as httpd:
-            httpd = secureServer(httpd, host)
+        with http.server.HTTPServer((host, int(port)), web_server) as httpd:
+            httpd = secure_server(httpd, host)
             while not AUTHCODE:
                 httpd.handle_request()
     
     return AUTHCODE
 
-def getTokens(client_id, client_secret):
+def get_tokens(client_id, client_secret):
     """Exchange auth code for access token"""
 
     tokenEndpoint = 'https://accounts.spotify.com/api/token'

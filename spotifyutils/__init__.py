@@ -1,7 +1,7 @@
 import argparse
 import os
 import configparser
-from spotifyutils.auth import userAuth, server, getTokens
+from spotifyutils.auth import user_auth, server, get_tokens
 
 def cli(input_args=None):
     """Main playlist program entrypoint
@@ -22,25 +22,21 @@ def cli(input_args=None):
     parser_config.add_argument(
         '--client-id',
         type=str,
-        default=os.getenv('SPOTIFY_CLIENT_ID'),
         help='Spotify Client ID'
     )
     parser_config.add_argument(
         '--client-secret',
         type=str,
-        default=os.getenv('SPOTIFY_CLIENT_SECRET'),
         help='Spotify client secret'
     )
     parser_config.add_argument(
         '--redirect-uri',
         type=str,
-        default='https://localhost:8084/spotifyutils/',
         help='Redirect URI (used for authentication)'
     )
     parser_config.add_argument(
         '--configfile',
         type=str,
-        default=os.path.join(os.path.expanduser('~'), '.spotifyutils.ini'),
         help='Location on the filesystem to store configuration parameters'
     )
 
@@ -53,30 +49,38 @@ def cli(input_args=None):
     main(**vars(args))
 
 def main(**kwargs):
-    """ Direct user to authorize spotify URL """
+    """ TODO: better descriptor """
 
-    configfile = kwargs['configfile']
-    
-    config = configparser.ConfigParser()
-    config ['spotifyutils'] = {
-        'ClIENT_ID': kwargs['client_id'],
-        'CLIENT_SECRET': kwargs['client_secret'],
-        'REDIRECT_URI': kwargs['redirect_uri']
-    }
+    #TODO: Need to figure out how to wrtie to config file under "spotifyutils" header
 
-    with open(configfile, "w") as f:
-        config.write(f)
+    if kwargs['configfile']:
+        configfile = kwargs['configfile']
+        config = configparser.ConfigParser()
+        if kwargs['client_id'] or kwargs['client_secret'] or kwargs['redirect_uri']:
+            config['spotifyutils'] = {}
 
-    parser = configparser.ConfigParser()
-    parser.read(configfile)
+            for key, value in kwargs.items():
+                config['spotifyutils'][key] = value
 
-    client_id = parser.get('spotifyutils', 'client_id')
-    client_secret = parser.get('spotifyutils', 'client_secret')
-    redirect_uri = parser.get('spotifyutils', 'redirect_uri')
+            with open(configfile, "w") as write_config:
+                config.write(write_config)
+            
+            client_id = kwargs['client_id']
+            client_secret = kwargs['client_secret']
+            redirect_uri = kwargs['redirect_uri']
+        else:
+            config.read(configfile)
+            client_id = config.get('spotifyutils', 'client_id')
+            client_secret = config.get('spotifyutils', 'client_secret')
+            redirect_uri = config.get('spotifyutils', 'redirect_uri')
+    else:
+        client_id = kwargs['client_id']
+        client_secret = kwargs['client_secret']
+        redirect_uri = kwargs['redirect_uri']
 
     print("Redirecting to Spotify Authorization URI, and spinning up web server")
-    userAuth(redirect_uri, client_id)
+    user_auth(redirect_uri, client_id)
     server()
 
     print("Getting Auth and Refresh Tokens")
-    accessToken, refreshToken = getTokens(client_id, client_secret)
+    accessToken, refreshToken = get_tokens(client_id, client_secret)
