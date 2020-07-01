@@ -1,7 +1,11 @@
 import argparse
 import os
 import configparser
-from spotifyutils.auth import user_auth, server, get_tokens
+import urllib.request
+import urllib.parse
+import base64
+import json
+from spotifyutils.config import configuration
 
 def cli(input_args=None):
     """Main playlist program entrypoint
@@ -47,48 +51,3 @@ def cli(input_args=None):
 
     args = parser.parse_args(input_args)
     configuration(**vars(args))
-
-def configuration(**kwargs):
-    """ Interpret CLI args and create configuration """
-    
-    # if configfile arg is passed, check if any other args are passed. If additional args are passed, overwrite any existing args 
-    # specified in configfile. If additional arguments are NOT passed, simply read the values stored in the configfile. 
-    # If configfile is not passed, just use CLI args passed.
-
-    if kwargs['configfile']:
-        configfile = kwargs['configfile']
-        config = configparser.ConfigParser()
-        if kwargs['client_id'] or kwargs['client_secret'] or kwargs['redirect_uri']:
-            config['spotifyutils'] = {}
-
-            for key, value in kwargs.items():
-                config['spotifyutils'][key] = value
-
-            with open(configfile, "w") as write_config:
-                config.write(write_config)
-            
-            client_id = kwargs['client_id']
-            client_secret = kwargs['client_secret']
-            redirect_uri = kwargs['redirect_uri']
-        else:
-            config.read(configfile)
-            client_id = config.get('spotifyutils', 'client_id')
-            client_secret = config.get('spotifyutils', 'client_secret')
-            redirect_uri = config.get('spotifyutils', 'redirect_uri')
-    else:
-        client_id = kwargs['client_id']
-        client_secret = kwargs['client_secret']
-        redirect_uri = kwargs['redirect_uri']
-
-    main(client_id, client_secret, redirect_uri)
-    
-
-def main(client_id, client_secret, redirect_uri):
-    
-    """ call other functions with variables configured in configuration function """
-    print("Redirecting to Spotify Authorization URI, and spinning up web server")
-    user_auth(redirect_uri, client_id)
-    server()
-
-    print("Getting Auth and Refresh Tokens")
-    accessToken, refreshToken = get_tokens(client_id, client_secret)
