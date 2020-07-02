@@ -2,16 +2,16 @@ import configparser
 import getpass
 from spotifyutils.auth import user_auth, secure_server, server, get_tokens
 
-def configuration(**kwargs):
-    """ if configfile arg is passed, check if any other args are passed. If additional args are passed, overwrite any existing args 
-    # specified in configfile. If additional arguments are NOT passed, simply read the values stored in the configfile. 
-    # If configfile is not passed, just use CLI args passed. """
-    
+def configuration(**kwargs: dict):
+    """ If configfile arg is passed, check if any other args are passed. If additional args are passed, overwrite any existing args 
+    specified in configfile. If additional arguments are NOT passed, simply read the values stored in the configfile. 
+    If configfile is not passed, use the args passed in the CLI OR take user input. """
+    #TODO: Fix second if statement, does not work with default values
 
     if kwargs['configfile']:
         configfile = kwargs['configfile']
         config = configparser.ConfigParser()
-        if kwargs['client_id'] or kwargs['client_secret'] or kwargs['redirect_uri']:
+        if kwargs['client_id'] or kwargs['client_secret']:
             config['spotifyutils'] = {}
 
             for key, value in kwargs.items():

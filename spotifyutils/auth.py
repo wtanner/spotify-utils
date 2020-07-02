@@ -11,8 +11,8 @@ import tempfile
 REDIRECT_URI = None
 AUTHCODE = None
 
-def user_auth(redirect_uri, client_id):
-    """ Generate and take user to Spotify Auth Page """
+def user_auth(redirect_uri: str, client_id: str):
+    """ Generate Spotify auth link with PARAMS and open the link in the user's default web browser. """
 
     global REDIRECT_URI 
     REDIRECT_URI = redirect_uri
@@ -32,10 +32,10 @@ def user_auth(redirect_uri, client_id):
     authorization_url = base_url + "?" + (urllib.parse.urlencode(PARAMS))
     webbrowser.open_new(authorization_url)
 
-class web_server(http.server.BaseHTTPRequestHandler):
+class WebServer(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self):
-        """ Handle auth code sent to redirect URI """
+        """ Parse AUTHCODE sent to the redirect uri and direct user to index page if the get request path equals the redirect uri. """
         global AUTHCODE
         
         # Read URI from configfile
@@ -57,8 +57,8 @@ class web_server(http.server.BaseHTTPRequestHandler):
         else:
             self.send_response(404, 'NOT FOUND')
 
-def secure_server(http_server, host):
-    """ generate items required to make web server secure """
+def secure_server(http_server: str, host: int):
+    """ Generate the SSL context required for a secure web server. """
 
     ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     
@@ -81,23 +81,24 @@ def secure_server(http_server, host):
     http_server.socket = ssl_context.wrap_socket(http_server.socket, server_side=True) 
     return http_server
         
-def server():
-    """ create a web server to handle the get request """
+def server() -> str:
+    """ Spin up a web server based on information contained in the redirect uri and wrap in the SSL context generated in the secure_server function. 
+    Listen for a get request from the spotify authorize endpoint as long as this program does not have an AUTHCODE. """
     
     host, port = urllib.parse.urlparse(REDIRECT_URI).netloc.split(':')
 
     if AUTHCODE:
         return AUTHCODE
     else:
-        with http.server.HTTPServer((host, int(port)), web_server) as httpd:
+        with http.server.HTTPServer((host, int(port)), WebServer) as httpd:
             httpd = secure_server(httpd, host)
             while not AUTHCODE:
                 httpd.handle_request()
     
     return AUTHCODE
 
-def get_tokens(client_id, client_secret):
-    """Exchange auth code for access token"""
+def get_tokens(client_id: str, client_secret: str) -> str:
+    """ Exchange AUTHCODE for access and refresh tokens using the Spotify token endpoint and the redirect uri, client id, and client secret specified during configuration. Access and refresh tokens are returned. """
 
     tokenEndpoint = 'https://accounts.spotify.com/api/token'
     grant_type = 'authorization_code'
