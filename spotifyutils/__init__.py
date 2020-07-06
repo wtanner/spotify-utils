@@ -7,7 +7,6 @@ import base64
 import json
 from spotifyutils.config import configuration
 
-#TODO: Add CLI capability, config_read, config_write, etc....
 
 def cli(input_args=None):
     """Main playlist program entrypoint
@@ -21,7 +20,6 @@ def cli(input_args=None):
 
     subparsers = parser.add_subparsers(
         help='sub-command help',
-        dest='command'
         )
 
     # Configuration command
@@ -41,7 +39,6 @@ def cli(input_args=None):
     parser_config.add_argument(
         '--redirect-uri',
         type=str,
-        default='https://localhost:8084/spotifyutils/',
         help='Redirect URI (used for authentication)'
     )
     parser_config.add_argument(
