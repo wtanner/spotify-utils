@@ -18,14 +18,14 @@ def user_auth(redirect_uri: str, client_id: str):
     REDIRECT_URI = redirect_uri
     base_url = "https://accounts.spotify.com/authorize"
     response_type = 'code'
-    scope = 'user-read-email'
+    scope = ['user-read-email']
     show_dialog = 'true'
 
     PARAMS = {
         'client_id': client_id,
         'response_type': response_type,
         'redirect_uri': redirect_uri,
-        'scope': scope,
+        'scope': (''.join(scope)),
         'show_dialog': show_dialog
     }
 
