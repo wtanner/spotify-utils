@@ -3,6 +3,8 @@ import getpass
 import os
 from spotifyutils.auth import user_auth, secure_server, server, get_tokens
 
+#TODO: Write function that checks if access/refresh tokens exist. If so, don't go through flow. If not, go through flow. 
+DEFAULT = {'configfile': '.spotifyutils.ini'}
 def configuration(**kwargs: dict):
     """ If configfile arg is passed, check if any other args are passed. If additional args are passed, overwrite any existing args 
     specified in configfile. If additional arguments are NOT passed, simply read the values stored in the configfile. 
@@ -40,25 +42,27 @@ def configuration(**kwargs: dict):
         
         if configfile:
             configfile = os.path.join(os.path.expanduser('~'), configfile)
-            config['spotifyutils'] = {}
-            config_params = {
-                'client_id': client_id,
-                'client_secret': client_secret,
-                'redirect_uri': redirect_uri,
-                'configfile': configfile
-            }
-
-            for key, value in config_params.items():
-                config['spotifyutils'][key] = value  
+        else:
+            configfile = os.path.join(os.path.expanduser('~'), DEFAULT['configfile'])
             
-            with open(configfile, "w") as write_config:
-                config.write(write_config)
+        config['spotifyutils'] = {}
+        config_params = {
+            'client_id': client_id,
+            'client_secret': client_secret,
+            'redirect_uri': redirect_uri,
+            'configfile': configfile
+        }
 
-
+        for key, value in config_params.items():
+            config['spotifyutils'][key] = value  
+            
+        with open(configfile, "w") as write_config:
+            config.write(write_config)
+            
 
     print("Redirecting to Spotify Authorization URI, and spinning up web server")
     user_auth(redirect_uri, client_id)
     server()
 
     print("Getting Auth and Refresh Tokens")
-    accessToken, refreshToken = get_tokens(client_id, client_secret)
+    get_tokens(client_id, client_secret)
