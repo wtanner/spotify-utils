@@ -10,8 +10,6 @@ import tempfile
 
 REDIRECT_URI = None
 AUTHCODE = None
-ACCESS_TOKEN = None
-REFRESH_TOKEN = None
 
 def user_auth(redirect_uri: str, client_id: str):
     """ Generate Spotify auth link with PARAMS and open the link in the user's default web browser. """
@@ -117,9 +115,7 @@ def get_tokens(client_id: str, client_secret: str) -> str:
     request = urllib.request.Request(tokenEndpoint, encodedParams)
     response = urllib.request.urlopen(request).read()
     json_data = json.loads(response)
-    ACCESS_TOKEN = json_data['access_token'] 
-    REFRESH_TOKEN = json_data['refresh_token']
+    json_data['access_token'] 
+    json_data['refresh_token']
 
-    if ACCESS_TOKEN and REFRESH_TOKEN:
-        print("Access and Refresh tokens exist")
-        print("Refresh token = ", REFRESH_TOKEN)
+    return json_data['access_token'], json_data['refresh_token']

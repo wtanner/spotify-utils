@@ -3,8 +3,12 @@ import getpass
 import os
 from spotifyutils.auth import user_auth, secure_server, server, get_tokens
 
-#TODO: Write function that checks if access/refresh tokens exist. If so, don't go through flow. If not, go through flow. 
 DEFAULT = {'configfile': '.spotifyutils.ini'}
+
+#if os.path.exists(os.path.join(os.path.expanduser('~'), DEFAULT['configfile'])):
+    #TODO: write function that re-auths
+
+
 def configuration(**kwargs: dict):
     """ If configfile arg is passed, check if any other args are passed. If additional args are passed, overwrite any existing args 
     specified in configfile. If additional arguments are NOT passed, simply read the values stored in the configfile. 
@@ -58,11 +62,27 @@ def configuration(**kwargs: dict):
             
         with open(configfile, "w") as write_config:
             config.write(write_config)
-            
+
+    def write_tokens(configfile, ACCESS_TOKEN, REFRESH_TOKEN):
+        """ Write the tokens to the configfile """
+        config['tokens'] = {}
+        tokens = {
+            'access_token': ACCESS_TOKEN,
+            'refresh_token': REFRESH_TOKEN
+        }
+
+        for key, value in tokens.items():
+            config['tokens'][key] = value
+    
+        with open(configfile, "w") as write_config:
+            config.write(write_config)
 
     print("Redirecting to Spotify Authorization URI, and spinning up web server")
     user_auth(redirect_uri, client_id)
     server()
 
     print("Getting Auth and Refresh Tokens")
-    get_tokens(client_id, client_secret)
+    ACCESS_TOKEN, REFRESH_TOKEN = get_tokens(client_id, client_secret)
+    write_tokens(configfile, ACCESS_TOKEN, REFRESH_TOKEN)
+    
+
