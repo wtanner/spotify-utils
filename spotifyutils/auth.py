@@ -1,5 +1,6 @@
 import http.server
 import ssl
+import base64
 import urllib.parse
 import urllib.request
 import configparser
@@ -100,11 +101,10 @@ def server() -> str:
 def get_tokens(client_id: str, client_secret: str) -> str:
     """ Exchange AUTHCODE for access and refresh tokens using the Spotify token endpoint and the redirect uri, client id, and client secret specified during configuration. Access and refresh tokens are returned. """
 
-    global ACCESS_TOKEN, REFRESH_TOKEN
     tokenEndpoint = 'https://accounts.spotify.com/api/token'
     grant_type = 'authorization_code'
     
-    encodedParams = urllib.parse.urlencode({
+    encoded_params = urllib.parse.urlencode({
         'grant_type': grant_type,
         'code': AUTHCODE,
         'redirect_uri': REDIRECT_URI,
@@ -112,10 +112,32 @@ def get_tokens(client_id: str, client_secret: str) -> str:
         'client_secret': client_secret
     }).encode('ascii')
 
-    request = urllib.request.Request(tokenEndpoint, encodedParams)
+    request = urllib.request.Request(tokenEndpoint, encoded_params)
     response = urllib.request.urlopen(request).read()
     json_data = json.loads(response)
     json_data['access_token'] 
     json_data['refresh_token']
 
     return json_data['access_token'], json_data['refresh_token']
+
+def refresh_tokens(client_id, client_secret, REFRESH_TOKEN):
+    """ This function uses the refresh token for a new access token """
+
+    tokenEndpoint = 'https://accounts.spotify.com/api/token'
+    grant_type = 'refresh_token'
+
+    encoded_id_secret = base64.b64encode(f'{client_id}:{client_secret}'.encode('ascii')).decode('ascii')
+    encoded_params = urllib.parse.urlencode({
+        'grant_type': grant_type,
+        'refresh_token': REFRESH_TOKEN
+    }).encode('ascii')
+    headers = {
+        'Authorization' : 'Basic ' + encoded_id_secret
+    }
+
+    request = urllib.request.Request(tokenEndpoint, encoded_params, headers)
+    response = urllib.request.urlopen(request).read()
+    json_data = json.loads(response)
+    json_data['access_token'] 
+
+    return json_data['access_token']
