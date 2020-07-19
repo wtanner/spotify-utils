@@ -1,13 +1,9 @@
 import configparser
 import getpass
 import os
-from spotifyutils.auth import user_auth, secure_server, server, get_tokens
+from spotifyutils.auth import user_auth, secure_server, server, get_tokens, refresh_tokens
 
 DEFAULT = {'configfile': '.spotifyutils.ini'}
-
-#if os.path.exists(os.path.join(os.path.expanduser('~'), DEFAULT['configfile'])):
-    #TODO: write function that re-auths
-
 
 def configuration(**kwargs: dict):
     """ If configfile arg is passed, check if any other args are passed. If additional args are passed, overwrite any existing args 
@@ -20,69 +16,100 @@ def configuration(**kwargs: dict):
     if kwargs['configfile']:
         configfile = kwargs['configfile']
         if kwargs['client_id'] or kwargs['client_secret'] or kwargs['redirect_uri']:
-            config['spotifyutils'] = {}
-
-            for key, value in kwargs.items():
-                config['spotifyutils'][key] = value
-
-            with open(configfile, "w") as write_config:
-                config.write(write_config)
-            
             client_id = kwargs['client_id']
             client_secret = kwargs['client_secret']
             redirect_uri = kwargs['redirect_uri']
+
+            print("Redirecting to Spotify Authorization URI, and spinning up web server")
+            user_auth(redirect_uri, client_id)
+            server()
+
+            print("Getting Auth and Refresh Tokens")
+            ACCESS_TOKEN, REFRESH_TOKEN = get_tokens(client_id, client_secret)
         else:
             config.read(configfile)
             client_id = config.get('spotifyutils', 'client_id')
             client_secret = config.get('spotifyutils', 'client_secret')
             redirect_uri = config.get('spotifyutils', 'redirect_uri')
-            
-    
+            if config.get('tokens', 'refresh_token'):
+                REFRESH_TOKEN = config.get('tokens', 'refresh_token')
+                ACCESS_TOKEN = refresh_tokens(client_id, client_secret, REFRESH_TOKEN)
+            else:
+                print("Redirecting to Spotify Authorization URI, and spinning up web server")
+                user_auth(redirect_uri, client_id)
+                server()
+
+                print("Getting Auth and Refresh Tokens")
+                ACCESS_TOKEN, REFRESH_TOKEN = get_tokens(client_id, client_secret)
+
     else:
-        client_id = kwargs['client_id'] or input('Client ID: ')
-        client_secret = kwargs['client_secret'] or getpass.getpass(prompt='Client Secret: ')
-        redirect_uri = kwargs['redirect_uri'] or input('Redirect URI: ')
-        configfile = input('(optional) User Config File Location: ')
-        
-        if configfile:
-            configfile = os.path.join(os.path.expanduser('~'), configfile)
-        else:
+        if os.path.exists(os.path.join(os.path.expanduser('~'), DEFAULT['configfile'])):
             configfile = os.path.join(os.path.expanduser('~'), DEFAULT['configfile'])
             
+            config.read(configfile)
+            client_id = config.get('spotifyutils', 'client_id')
+            client_secret = config.get('spotifyutils', 'client_secret')
+            redirect_uri = config.get('spotifyutils', 'redirect_uri')
+            print("Reading from existing default configfile: ", client_id, client_secret, redirect_uri)
+
+            if config.get('tokens', 'refresh_token'):
+                REFRESH_TOKEN = config.get('tokens', 'refresh_token')
+                ACCESS_TOKEN = refresh_tokens(client_id, client_secret, REFRESH_TOKEN)
+            else:
+                print("Redirecting to Spotify Authorization URI, and spinning up web server")
+                user_auth(redirect_uri, client_id)
+                server()
+
+                print("Getting Auth and Refresh Tokens")
+                ACCESS_TOKEN, REFRESH_TOKEN = get_tokens(client_id, client_secret)
+
+        else:
+            client_id = kwargs['client_id'] or input('Client ID: ')
+            client_secret = kwargs['client_secret'] or getpass.getpass(prompt='Client Secret: ')
+            redirect_uri = kwargs['redirect_uri'] or input('Redirect URI: ')
+            configfile = input('(optional) User Config File Location: ')
+        
+            if configfile:
+                configfile = os.path.join(os.path.expanduser('~'), configfile)
+            else:
+                configfile = os.path.join(os.path.expanduser('~'), DEFAULT['configfile'])
+
+            print("Redirecting to Spotify Authorization URI, and spinning up web server")
+            user_auth(redirect_uri, client_id)
+            server()
+
+            print("Getting Auth and Refresh Tokens")
+            ACCESS_TOKEN, REFRESH_TOKEN = get_tokens(client_id, client_secret)
+    
+    
+    def write_config(client_id, client_secret, redirect_uri, configfile, ACCESS_TOKEN, REFRESH_TOKEN):
+        """ Write all values to configfile """
+        
         config['spotifyutils'] = {}
-        config_params = {
+        config['tokens'] = {}
+        
+        params = {
             'client_id': client_id,
             'client_secret': client_secret,
             'redirect_uri': redirect_uri,
             'configfile': configfile
         }
 
-        for key, value in config_params.items():
-            config['spotifyutils'][key] = value  
-            
-        with open(configfile, "w") as write_config:
-            config.write(write_config)
-
-    def write_tokens(configfile, ACCESS_TOKEN, REFRESH_TOKEN):
-        """ Write the tokens to the configfile """
-        config['tokens'] = {}
         tokens = {
             'access_token': ACCESS_TOKEN,
             'refresh_token': REFRESH_TOKEN
         }
 
+
+        for key, value in params.items():
+            config['spotifyutils'][key] = value
+        
         for key, value in tokens.items():
             config['tokens'][key] = value
     
-        with open(configfile, "w") as write_config:
-            config.write(write_config)
+        with open(configfile, "w") as write_values:
+            config.write(write_values)
 
-    print("Redirecting to Spotify Authorization URI, and spinning up web server")
-    user_auth(redirect_uri, client_id)
-    server()
-
-    print("Getting Auth and Refresh Tokens")
-    ACCESS_TOKEN, REFRESH_TOKEN = get_tokens(client_id, client_secret)
-    write_tokens(configfile, ACCESS_TOKEN, REFRESH_TOKEN)
+    print("Writing to configfile")
+    write_config(client_id, client_secret, redirect_uri, configfile, ACCESS_TOKEN, REFRESH_TOKEN)
     
-
