@@ -6,10 +6,13 @@ from spotifyutils.auth import user_auth, secure_server, server, get_tokens, refr
 DEFAULT = {'configfile': '.spotifyutils.ini'}
 
 def configuration(**kwargs: dict):
-    """ If configfile arg is passed, check if any other args are passed. If additional args are passed, overwrite any existing args 
-    specified in configfile. If additional arguments are NOT passed, simply read the values stored in the configfile. 
-    If configfile is not passed, use the args passed in the CLI OR take user input. If the user chooses to entre a location for the configfile,
-    a config file will be created. """
+    """ If configfile arg is passed, check if any other args are passed. If additional args are passed, overwrite any exisiting args in the configfile
+    and replace with passed args. The auth modules are then used to generate access and refresh tokens. If additional args are NOT passed, read the configfile and
+    refresh access token if a refresh token exists. If a refresh token DOES NOT exist, use auth modules to generate access and refresh tokens.
+    If no arg is passed with the config method, check if a configfile exists in the default location. If a configfile DOES exist and a refresh toekn DOES exist
+    refresh the access token. If a configfile DOES exist and a refresh token DOES NOT exist, use the auth modules to generate refresh and access tokens. If a 
+    configfile DOES NOT exist in the default location, create config params based on passed args or user input. Use the auth modules to generate refresh and
+    access tokens. Finally, write all config params including refresh and access tokens to configfile. """
 
     config = configparser.ConfigParser()
 
