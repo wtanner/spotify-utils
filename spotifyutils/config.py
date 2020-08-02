@@ -43,8 +43,9 @@ def parse_config(**kwargs) -> Tuple[str, dict]:
     """
     >>> from pprint import pprint
     >>> pprint(parse_config(client_id='1234', client_secret='1234', configfile='fakefile'))
-    {'main': {'client_id': '1234', 'client_secret': '1234', 'redirect_uri': None},
-     'tokens': {'access_token': None, 'refresh_token': None}}
+    ('fakefile',
+     {'main': {'client_id': '1234', 'client_secret': '1234', 'redirect_uri': None},
+      'tokens': {'access_token': None, 'refresh_token': None}})
     """
     # used to manage the configuration file
     config_parser = configparser.ConfigParser()
