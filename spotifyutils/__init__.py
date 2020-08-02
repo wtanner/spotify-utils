@@ -10,9 +10,6 @@ from spotifyutils.config import configuration
 
 def cli(input_args=None):
     """Main playlist program entrypoint
-
-    >>> cli(['config', '--client-id', 'asdf'])
-    Test
     """
     parser = argparse.ArgumentParser(
         description='Utilities that interact with Spotify playlists'
