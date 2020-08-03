@@ -3,11 +3,12 @@ import ssl
 import base64
 import urllib.parse
 import urllib.request
-import configparser
 import webbrowser
 import json
-from spotifyutils.cert import generate_selfsigned_cert
 import tempfile
+
+from spotifyutils.cert import generate_selfsigned_cert
+from typing import Tuple, Optional
 
 REDIRECT_URI = None
 AUTHCODE = None
@@ -32,6 +33,7 @@ def user_auth(redirect_uri: str, client_id: str):
 
     authorization_url = base_url + "?" + (urllib.parse.urlencode(PARAMS))
     webbrowser.open_new(authorization_url)
+
 
 class WebServer(http.server.BaseHTTPRequestHandler):
 
@@ -81,8 +83,9 @@ def secure_server(http_server: str, host: int):
 
     http_server.socket = ssl_context.wrap_socket(http_server.socket, server_side=True) 
     return http_server
-        
-def server() -> str:
+
+
+def server() -> Optional[str]:
     """ Spin up a web server based on information contained in the redirect uri and wrap in the SSL context generated in the secure_server function. 
     Listen for a get request from the spotify authorize endpoint as long as this program does not have an AUTHCODE. """
     
@@ -98,10 +101,11 @@ def server() -> str:
     
     return AUTHCODE
 
-def get_tokens(client_id: str, client_secret: str) -> str:
+
+def get_tokens(client_id: str, client_secret: str) -> Tuple[str, str]:
     """ Exchange AUTHCODE for access and refresh tokens using the Spotify token endpoint and the redirect uri, client id, and client secret specified during configuration. Access and refresh tokens are returned. """
 
-    tokenEndpoint = 'https://accounts.spotify.com/api/token'
+    token_endpoint = 'https://accounts.spotify.com/api/token'
     grant_type = 'authorization_code'
     
     encoded_params = urllib.parse.urlencode({
@@ -112,32 +116,30 @@ def get_tokens(client_id: str, client_secret: str) -> str:
         'client_secret': client_secret
     }).encode('ascii')
 
-    request = urllib.request.Request(tokenEndpoint, encoded_params)
+    request = urllib.request.Request(token_endpoint, encoded_params)
     response = urllib.request.urlopen(request).read()
     json_data = json.loads(response)
-    json_data['access_token'] 
-    json_data['refresh_token']
 
     return json_data['access_token'], json_data['refresh_token']
 
-def refresh_tokens(client_id, client_secret, REFRESH_TOKEN):
+
+def refresh_tokens(client_id, client_secret, refresh_token):
     """ This function uses the refresh token for a new access token """
 
-    tokenEndpoint = 'https://accounts.spotify.com/api/token'
+    token_endpoint = 'https://accounts.spotify.com/api/token'
     grant_type = 'refresh_token'
 
     encoded_id_secret = base64.b64encode(f'{client_id}:{client_secret}'.encode('ascii')).decode('ascii')
     encoded_params = urllib.parse.urlencode({
         'grant_type': grant_type,
-        'refresh_token': REFRESH_TOKEN
+        'refresh_token': refresh_token
     }).encode('ascii')
     headers = {
-        'Authorization' : 'Basic ' + encoded_id_secret
+        'Authorization': 'Basic ' + encoded_id_secret
     }
 
-    request = urllib.request.Request(tokenEndpoint, encoded_params, headers)
+    request = urllib.request.Request(token_endpoint, encoded_params, headers)
     response = urllib.request.urlopen(request).read()
     json_data = json.loads(response)
-    json_data['access_token'] 
 
     return json_data['access_token']
