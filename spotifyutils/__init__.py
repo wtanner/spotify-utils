@@ -1,18 +1,23 @@
 import argparse
 import os
+import configparser
+import urllib.request
+import urllib.parse
+import base64
+import json
+from spotifyutils.config import configuration
 
 
 def cli(input_args=None):
     """Main playlist program entrypoint
-
-    >>> cli(['config', '--client-id', 'asdf'])
-    Test
     """
     parser = argparse.ArgumentParser(
         description='Utilities that interact with Spotify playlists'
     )
 
-    subparsers = parser.add_subparsers(help='sub-command help')
+    subparsers = parser.add_subparsers(
+        help='sub-command help',
+        )
 
     # Configuration command
     parser_config = subparsers.add_parser(
@@ -21,25 +26,21 @@ def cli(input_args=None):
     parser_config.add_argument(
         '--client-id',
         type=str,
-        default=os.getenv('SPOTIFY_CLIENT_ID'),
         help='Spotify Client ID'
     )
     parser_config.add_argument(
         '--client-secret',
         type=str,
-        default=os.getenv('SPOTIFY_CLIENT_SECRET'),
         help='Spotify client secret'
     )
     parser_config.add_argument(
         '--redirect-uri',
         type=str,
-        default='http://localhost:8082',
         help='Redirect URI (used for authentication)'
     )
     parser_config.add_argument(
         '--configfile',
         type=str,
-        default=os.path.join(os.path.expanduser('~'), '.spotifyutils'),
         help='Location on the filesystem to store configuration parameters'
     )
 
@@ -49,8 +50,4 @@ def cli(input_args=None):
     )
 
     args = parser.parse_args(input_args)
-    main(**vars(args))
-
-
-def main(**kwargs):
-    print('Test')
+    configuration(**vars(args))
