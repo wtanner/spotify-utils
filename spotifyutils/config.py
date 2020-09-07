@@ -114,11 +114,21 @@ def configuration(**kwargs):
         print("Waiting for redirect from Spotify")
         server()
 
-        print("Getting Auth and Refresh Tokens")
+        print("Getting Access and Refresh Tokens")
         config_dict['tokens']['access_token'], config_dict['tokens']['refresh_token'] = get_tokens(
             config_dict['main']['client_id'],
             config_dict['main']['client_secret']
         )
 
         print("Writing configuration")
+        write_config(config_dict, config_filename)
+    else:
+        print("Tokens exist, refreshing Access token")
+        config_dict['tokens']['access_token'] = refresh_tokens(
+            config_dict['main']['client_id'], 
+            config_dict['main']['client_secret'], 
+            config_dict['tokens']['refresh_token']
+        )
+        
+        print("Updating configuration")
         write_config(config_dict, config_filename)
