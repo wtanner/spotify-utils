@@ -19,7 +19,7 @@ params including refresh and access tokens to configfile.
 import configparser
 import getpass
 import os
-from spotifyutils.auth import user_auth, secure_server, server, get_tokens, refresh_tokens
+from spotifyutils.auth import user_auth, secure_server, server, get_tokens, refresh_tokens, get_spotifyID
 from typing import Tuple
 
 
@@ -36,6 +36,9 @@ CONFIG_FILE_FORMAT = {
         'access_token': None,
         'refresh_token': None,
     },
+    'spotify': {
+        'spotify_id': None,
+    },
 }
 
 
@@ -45,7 +48,8 @@ def parse_config(**kwargs) -> Tuple[str, dict]:
     >>> pprint(parse_config(client_id='1234', client_secret='1234', configfile='fakefile'))
     ('fakefile',
      {'main': {'client_id': '1234', 'client_secret': '1234', 'redirect_uri': None},
-      'tokens': {'access_token': None, 'refresh_token': None}})
+      'tokens': {'access_token': None, 'refresh_token': None},
+      'spotify': {'spotify_id': None}})
     """
     # used to manage the configuration file
     config_parser = configparser.ConfigParser()
@@ -119,6 +123,9 @@ def configuration(**kwargs):
             config_dict['main']['client_id'],
             config_dict['main']['client_secret']
         )
+
+        print("Getting Spotify User ID")
+        config_dict['spotify']['spotify_id'] = get_spotifyID(config_dict['tokens']['access_token'])
 
         print("Writing configuration")
         write_config(config_dict, config_filename)

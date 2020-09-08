@@ -143,3 +143,17 @@ def refresh_tokens(client_id, client_secret, refresh_token):
     json_data = json.loads(response)
 
     return json_data['access_token']
+
+def get_spotifyID(access_token):
+    """ Perform a GET request at the /me endpoint to get the currently-authenticated user's Spotify ID for future tasks """
+
+    endpoint = 'https://api.spotify.com/v1/me'
+    headers = {
+    'Authorization': 'Bearer ' + access_token
+    }
+
+    request = urllib.request.Request(endpoint, headers=headers)
+    response = json.load(urllib.request.urlopen(request))
+    spotify_id = response['id']
+        
+    return spotify_id
