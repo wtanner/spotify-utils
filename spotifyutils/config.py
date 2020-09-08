@@ -20,6 +20,7 @@ import configparser
 import getpass
 import os
 from spotifyutils.auth import user_auth, secure_server, server, get_tokens, refresh_tokens, get_spotifyID
+from spotifyutils.read import get_playlists
 from typing import Tuple
 
 
@@ -139,3 +140,5 @@ def configuration(**kwargs):
         
         print("Updating configuration")
         write_config(config_dict, config_filename)
+
+    get_playlists(config_dict['tokens']['access_token'], config_dict['spotify']['spotify_id'])
