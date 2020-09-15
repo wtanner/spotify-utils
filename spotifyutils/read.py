@@ -9,5 +9,9 @@ def get_playlists(access_token, spotify_id):
     'Authorization': 'Bearer ' + access_token
     }
     request = urllib.request.Request(endpoint, headers=headers)
-    response = json.load(urllib.request.urlopen(request))
-    print(response)
+    data = json.load(urllib.request.urlopen(request))['items']
+    playlists = []
+    for name in data:
+        playlists.append(name['name'])
+    print(playlists)
+        
