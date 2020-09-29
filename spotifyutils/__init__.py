@@ -17,6 +17,7 @@ def cli(input_args=None):
 
     subparsers = parser.add_subparsers(
         help='sub-command help',
+        dest='subcommand'
         )
 
     # Configuration command
@@ -48,6 +49,18 @@ def cli(input_args=None):
     playlist_config = subparsers.add_parser(
         'playlist', help='Utilities that deal with Spotify playlists'
     )
+    playlist_config.add_argument(
+        '-r',
+        '--read',
+        action='store_true',
+        help='Read playlists'
+    )
 
-    args = parser.parse_args(input_args)
-    configuration(**vars(args))
+    args = parser.parse_args()
+
+    if args.subcommand == 'playlist':
+        print('Working with playlists')
+    elif args.subcommand == 'config':
+        configuration(**vars(args))
+    else:
+        print('Please enter valid input')
