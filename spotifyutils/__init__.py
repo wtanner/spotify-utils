@@ -5,7 +5,9 @@ import urllib.request
 import urllib.parse
 import base64
 import json
-from spotifyutils.config import configuration
+from spotifyutils.config import configuration, parse_config, read_config
+from spotifyutils.auth import refresh_tokens, get_spotifyID
+from spotifyutils.playlist import playlist
 
 
 def cli(input_args=None):
@@ -52,15 +54,16 @@ def cli(input_args=None):
     playlist_config.add_argument(
         '-r',
         '--read',
-        action='store_true',
+        action='store_false',
         help='Read playlists'
     )
 
     args = parser.parse_args()
 
-    if args.subcommand == 'playlist':
-        print('Working with playlists')
-    elif args.subcommand == 'config':
+
+    if args.subcommand == 'config':
         configuration(**vars(args))
+    elif args.subcommand == 'playlist':
+        playlist(**vars(args))
     else:
         print('Please enter valid input')

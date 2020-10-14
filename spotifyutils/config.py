@@ -20,7 +20,6 @@ import configparser
 import getpass
 import os
 from spotifyutils.auth import user_auth, secure_server, server, get_tokens, refresh_tokens, get_spotifyID
-from spotifyutils.read import get_playlists
 from typing import Tuple
 
 
@@ -85,6 +84,8 @@ def write_config(config_dict: dict, config_filename: str) -> None:
 
 def configuration(**kwargs):
 
+    print("These are the kwargs: ", kwargs)
+
     print("\n")
     print("Entering configuration mode for spotify utilities")
     print("\n")
@@ -141,4 +142,19 @@ def configuration(**kwargs):
         print("Updating configuration")
         write_config(config_dict, config_filename)
 
-    get_playlists(config_dict['tokens']['access_token'], config_dict['spotify']['spotify_id'])
+        access_token = config_dict['tokens']['access_token']
+        spotify_id = config_dict['spotify']['spotify_id']
+
+        return access_token, spotify_id
+
+def read_config():
+    """ This function reads the configdict in the configfile as per the parse_config function """
+    config_dict = (parse_config()[1])
+    client_id = config_dict['main']['client_id']
+    client_secret = config_dict['main']['client_secret']
+    refresh_token = config_dict['tokens']['refresh_token']
+    access_token = refresh_tokens(client_id, client_secret, refresh_token)
+    spotify_id = config_dict['spotify']['spotify_id']
+
+    return access_token, spotify_id
+    
