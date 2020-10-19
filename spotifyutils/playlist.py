@@ -19,5 +19,6 @@ def playlist(**kwargs):
             playlists.append(name['name'])
         print(playlists)
     
-    read_playlist(access_token, spotify_id)
+    if kwargs['read'] == True:
+        read_playlist(access_token, spotify_id)
         

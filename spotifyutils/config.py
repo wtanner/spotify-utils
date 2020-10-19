@@ -148,12 +148,10 @@ def configuration(**kwargs):
         return access_token, spotify_id
 
 def read_config():
-    """ This function reads the configdict in the configfile as per the parse_config function """
+    """ This function reads the config_dict and gathers the necessary items to refresh the access token in addition to the
+    spotify ID. After the new access token is generated, the access token and spotify id are returned. """
     config_dict = (parse_config()[1])
-    client_id = config_dict['main']['client_id']
-    client_secret = config_dict['main']['client_secret']
-    refresh_token = config_dict['tokens']['refresh_token']
-    access_token = refresh_tokens(client_id, client_secret, refresh_token)
+    access_token = refresh_tokens(config_dict['main']['client_id'], client_secret = config_dict['main']['client_secret'], refresh_token = config_dict['tokens']['refresh_token'])
     spotify_id = config_dict['spotify']['spotify_id']
 
     return access_token, spotify_id
