@@ -14,9 +14,9 @@ def playlist(**kwargs):
         }
         request = urllib.request.Request(endpoint, headers=headers)
         data = json.load(urllib.request.urlopen(request))['items']
-        playlists = []
-        for name in data:
-            playlists.append(name['name'])
+        playlists = {}
+        for item in data:
+            playlists[item['name']] = item['id']
         print(playlists)
     
     if kwargs['read'] == True:
