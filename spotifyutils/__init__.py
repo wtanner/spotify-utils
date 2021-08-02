@@ -7,7 +7,6 @@ import base64
 import json
 from spotifyutils.config import configuration
 
-
 def cli(input_args=None):
     """Main playlist program entrypoint
     """
@@ -50,4 +49,4 @@ def cli(input_args=None):
     )
 
     args = parser.parse_args(input_args)
-    configuration(**vars(args))
+    access_token = configuration(**vars(args))

@@ -19,9 +19,10 @@ params including refresh and access tokens to configfile.
 import configparser
 import getpass
 import os
-from spotifyutils.auth import user_auth, secure_server, server, get_tokens, refresh_tokens
+import datetime
+from spotifyutils.auth import user_auth, secure_server, server, get_tokens, \
+    refresh_tokens
 from typing import Tuple
-
 
 DEFAULT_CONFIG_FILENAME = f"{os.path.join(os.path.expanduser('~'), '.spotifyutils.ini')}"
 
@@ -34,7 +35,8 @@ CONFIG_FILE_FORMAT = {
     },
     'tokens': {
         'access_token': None,
-        'refresh_token': None,
+        'expires': None,
+        'refresh_token': None
     },
 }
 
@@ -78,8 +80,36 @@ def write_config(config_dict: dict, config_filename: str) -> None:
         config_parser.write(f)
 
 
-def configuration(**kwargs):
+def token_expiration(expires_in: int):
+    """This function computes the time at which the access token expires """
+    now = datetime.datetime.utcnow()
+    expires_at = now + datetime.timedelta(seconds=expires_in)
+    return expires_at
 
+
+def token_time_delta(token_expiration_date):
+    """This function checks to see if the token has expired"""
+    now = datetime.datetime.utcnow()
+    expires_datetime_obj = datetime.datetime.strptime(token_expiration_date, '%Y-%m-%d %H:%M:%S.%f')
+    return now > expires_datetime_obj
+
+
+def authorize_user(client_id: str, client_secret: str, redirect_uri: str) -> Tuple[str, int, str]:
+    """ Take the user through the authorization flow with the values provided
+    in the config file.
+    """
+    print("Redirecting to Spotify Authorization URI, and spinning up web server")
+    user_auth(redirect_uri, client_id)
+
+    print("Waiting for redirect from Spotify")
+    server()
+
+    print("Getting Auth, Refresh tokens and token lifespan")
+    access_token, expires_in, refresh_token = get_tokens(client_id, client_secret)
+    return access_token, expires_in, refresh_token
+
+
+def configuration(**kwargs):
     print("\n")
     print("Entering configuration mode for spotify utilities")
     print("\n")
@@ -104,21 +134,41 @@ def configuration(**kwargs):
     for key in config_dict['main']:
         assert config_dict['main'][key], f'{key} must be specified'
 
-    # if there is no refresh token, we need to authorize
+    # If there is no refresh token, we need to authorize
     if not config_dict['tokens'].get('refresh_token'):
-        print("Redirecting to Spotify Authorization URI, and spinning up web server")
-        user_auth(
-            config_dict['main']['redirect_uri'],
-            config_dict['main']['client_id']
-        )
-        print("Waiting for redirect from Spotify")
-        server()
+        client_id = config_dict['main']['client_id']
+        client_secret = config_dict['main']['client_secret']
+        redirect_uri = config_dict['main']['redirect_uri']
 
-        print("Getting Auth and Refresh Tokens")
-        config_dict['tokens']['access_token'], config_dict['tokens']['refresh_token'] = get_tokens(
-            config_dict['main']['client_id'],
-            config_dict['main']['client_secret']
-        )
+        access_token, expires_in, refresh_token = authorize_user(client_id,
+                                                                 client_secret,
+                                                                 redirect_uri)
+
+        expires_at = token_expiration(expires_in)
+
+        config_dict['tokens']['access_token'] = access_token
+        config_dict['tokens']['refresh_token'] = refresh_token
+        config_dict['tokens']['expires'] = expires_at
 
         print("Writing configuration")
         write_config(config_dict, config_filename)
+
+    # Check if the access_token has expired
+    if config_dict['tokens'].get('access_token'):
+        expires = config_dict['tokens'].get('expires')
+        expired = token_time_delta(expires)
+        if expired:
+            client_id = config_dict['main'].get('client_id')
+            client_secret = config_dict['main'].get('client_secret')
+            refresh_token = config_dict['tokens'].get('refresh_token')
+
+            access_token, expires_in = refresh_tokens(client_id, client_secret, refresh_token)
+            expires_at = token_expiration(expires_in)
+
+            config_dict['tokens']['access_token'] = access_token
+            config_dict['tokens']['expires'] = expires_at
+
+            print("Writing configuration")
+            write_config(config_dict, config_filename)
+
+    return config_dict['tokens'].get('access_token')
