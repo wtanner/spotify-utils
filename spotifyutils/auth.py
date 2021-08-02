@@ -60,6 +60,7 @@ class WebServer(http.server.BaseHTTPRequestHandler):
         else:
             self.send_response(404, 'NOT FOUND')
 
+
 def secure_server(http_server: str, host: int):
     """ Generate the SSL context required for a secure web server. """
 
@@ -102,7 +103,7 @@ def server() -> Optional[str]:
     return AUTHCODE
 
 
-def get_tokens(client_id: str, client_secret: str) -> Tuple[str, str]:
+def get_tokens(client_id: str, client_secret: str) -> tuple[str, int, str]:
     """ Exchange AUTHCODE for access and refresh tokens using the Spotify token endpoint and the redirect uri, client id, and client secret specified during configuration. Access and refresh tokens are returned. """
 
     token_endpoint = 'https://accounts.spotify.com/api/token'
@@ -120,11 +121,11 @@ def get_tokens(client_id: str, client_secret: str) -> Tuple[str, str]:
     response = urllib.request.urlopen(request).read()
     json_data = json.loads(response)
 
-    return json_data['access_token'], json_data['refresh_token']
+    return json_data['access_token'], json_data['expires_in'], json_data['refresh_token']
 
 
-def refresh_tokens(client_id, client_secret, refresh_token):
-    """ This function uses the refresh token for a new access token """
+def refresh_tokens(client_id: str, client_secret: str, refresh_token: str) -> Tuple[str, int]:
+    """ This function uses the refresh token for a new access token and lifetime """
 
     token_endpoint = 'https://accounts.spotify.com/api/token'
     grant_type = 'refresh_token'
@@ -142,4 +143,4 @@ def refresh_tokens(client_id, client_secret, refresh_token):
     response = urllib.request.urlopen(request).read()
     json_data = json.loads(response)
 
-    return json_data['access_token']
+    return json_data['access_token'], json_data['expires_in']
